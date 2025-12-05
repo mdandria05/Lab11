@@ -1,10 +1,22 @@
 import networkx as nx
-from database.dao import DAO
+from networkx.classes import neighbors
 
+from database.dao import DAO
+from model.rifugio import Rifugio
 
 class Model:
     def __init__(self):
         self.G = nx.Graph()
+        self.rifugio_dict = {}
+        self.connessioni_list = []
+
+    def getRifugi(self):
+        self.rifugio_list = DAO.getAllrifugi()
+        for r in self.rifugio_list:
+            self.rifugio_dict[r.id] = r
+
+    def getConnessioni(self,year : int):
+        self.connessioni_list = DAO.getAllconnessioni_for_year(year)
 
     def build_graph(self, year: int):
         """
@@ -14,6 +26,13 @@ class Model:
         :param year: anno limite fino al quale selezionare le connessioni da includere.
         """
         # TODO
+        self.G.clear()
+        self.getRifugi()
+        self.getConnessioni(year)
+        for c in self.connessioni_list:
+            self.G.add_edge(self.rifugio_dict[c.id_rifugio1],self.rifugio_dict[c.id_rifugio2])
+        return self.G
+
 
     def get_nodes(self):
         """
@@ -21,6 +40,11 @@ class Model:
         :return: lista dei rifugi presenti nel grafo.
         """
         # TODO
+        result = []
+        for r in self.G.nodes():
+            result.append(r)
+        result.sort(key=lambda x: x.id)
+        return result
 
     def get_num_neighbors(self, node):
         """
@@ -29,6 +53,11 @@ class Model:
         :return: numero di vicini diretti del nodo indicato
         """
         # TODO
+        neighbors = self.G.neighbors(node)
+        count = 0
+        for n in neighbors:
+            count += 1
+        return count
 
     def get_num_connected_components(self):
         """
@@ -36,6 +65,8 @@ class Model:
         :return: numero di componenti connesse
         """
         # TODO
+        componenti = list(nx.connected_components(self.G))
+        return len(componenti)
 
     def get_reachable(self, start):
         """
