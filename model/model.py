@@ -68,6 +68,35 @@ class Model:
         componenti = list(nx.connected_components(self.G))
         return len(componenti)
 
+    def get_reachable_bfs_tree(self,start):
+        tree_list = []
+        tree = nx.bfs_tree(self.G, start)
+        count = False
+        for t in tree:
+            if count: tree_list.append(t)
+            else: count = True
+        return tree_list
+
+    def get_reachable_dfs_tree(self, start):
+        tree_list = []
+        tree = nx.dfs_tree(self.G, start)
+        count = False
+        for t in tree:
+            if count:
+                tree_list.append(t)
+            else:
+                count = True
+        return tree_list
+
+    def get_reachable_recursive(self, start, visited):
+        if visited is None:
+            visited = set()
+        visited.add(start)
+        for neighbor in self.G[start]:
+            if neighbor not in visited:
+                self.get_reachable_recursive(neighbor, visited)
+        return visited
+
     def get_reachable(self, start):
         """
         Deve eseguire almeno 2 delle 3 tecniche indicate nella traccia:
@@ -86,3 +115,9 @@ class Model:
         """
 
         # TODO
+        adfs = self.get_reachable_dfs_tree(start)
+        abfs = self.get_reachable_bfs_tree(start)
+        b = self.get_reachable_recursive(start, None)
+        b.remove(start)
+
+        return b
